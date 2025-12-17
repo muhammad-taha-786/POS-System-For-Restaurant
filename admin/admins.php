@@ -16,6 +16,7 @@
                         echo '<h4>Something went wrong </h4>';
                         return false;
                     }                    
+                    
                     if(mysqli_num_rows($admins) > 0)
                     {
                                
@@ -39,8 +40,8 @@
                                 <td><?= $adminItem['name'] ?></td>
                                 <td><?= $adminItem['email'] ?></td>
                                 <td>
-                                    <a href="admins-edit.php" class="btn btn-success btn-sm">Edit</a>
-                                    <a href="admins-delete.php" class="btn btn-danger btn-sm">Delete</a>
+                                    <a href="admins-edit.php?id=<?= $adminItem['id'];?>" class="btn btn-success btn-sm">Edit</a>
+                                    <a href="admins-delete.php?id=<?= $adminItem['id'];?>" class="btn btn-danger btn-sm">Delete</a>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
