@@ -28,8 +28,8 @@ if(isset($_POST['loginBtn']))
                     redirect('login.php', 'Your account has been banned');
                 }
                 
-                $_SESSION['loggedin'] = true;
-                $_SESSION['loggedin_id'] =[
+                $_SESSION['loggedIn'] = true;
+                $_SESSION['loggedInUser'] =[
                     'user_id' => $row['id'],
                     'name' => $row['name'],
                     'email' => $row['email'],
