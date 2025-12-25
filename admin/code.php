@@ -1,187 +1,164 @@
 <?php
+include('../config/function.php');
 
-include('../config/function.php'); 
+/* ===================== ADMINS ===================== */
 
-if(isset($_POST['saveAdmin']))
-{
+if (isset($_POST['saveAdmin'])) {
+
     $name = validate($_POST['name']);
     $email = validate($_POST['email']);
     $password = validate($_POST['password']);
     $phone = validate($_POST['phone']);
-    $is_ban = isset($_POST['is_ban']) == true ? 1:0;
+    $is_ban = isset($_POST['is_ban']) ? 1 : 0;
 
-    if($name != '' && $email != '' && $password !=''){
-      
-        $emailCheck = mysqli_query($conn, "SELECT * FROM admins WHERE email='$email' ");
-       if($emailCheck){
-        if(mysqli_num_rows($emailCheck) > 0){
-            redirect('admins-create.php', 'Email already exists');
-        }
+    if ($name == '' || $email == '' || $password == '') {
+        redirect('admins-create.php', 'All fields are mandatory');
     }
 
-    $bcrypt_password = password_hash($password, PASSWORD_BCRYPT);
+    $checkEmail = mysqli_query($conn, "SELECT id FROM admins WHERE email='$email'");
+    if (mysqli_num_rows($checkEmail) > 0) {
+        redirect('admins-create.php', 'Email already exists');
+    }
+
     $data = [
         'name' => $name,
         'email' => $email,
-        'password' => $bcrypt_password,
+        'password' => password_hash($password, PASSWORD_BCRYPT),
         'phone' => $phone,
         'is_ban' => $is_ban
     ];
-    $result = insert('admins', $data);
-    
-    if($result){
-        redirect('admins.php', 'Admin added successfully');
-    }else{
-        redirect('admins-create.php', 'Something went wrong');
-    }
-    
-    }else{
-        redirect('admins-create.php', 'All fields are mandatory');
-    }
+
+    insert('admins', $data);
+    redirect('admins.php', 'Admin added successfully');
 }
-if(isset($_POST['updateAdmin']))
-{
+
+/* ===================== UPDATE ADMIN ===================== */
+
+else if (isset($_POST['updateAdmin'])) {
+
     $adminId = validate($_POST['adminId']);
-
     $adminData = getById('admins', $adminId);
-    if($adminData['status'] != 200)
-    {
-        redirect('admins-edit.php?id='.$adminId, 'All fields are mandatory');
+
+    if ($adminData['status'] != 200) {
+        redirect('admins.php', 'Admin not found');
     }
 
     $name = validate($_POST['name']);
     $email = validate($_POST['email']);
-    $password = validate($_POST['password']);
     $phone = validate($_POST['phone']);
-    $is_ban = isset($_POST['is_ban']) == true ? 1:0;
+    $is_ban = isset($_POST['is_ban']) ? 1 : 0;
 
-    $EmailCheckQuery = "SELECT * FROM admins WHERE email='$email' AND id!='$adminId'";
-    $checkResult = mysqli_query($conn, $EmailCheckQuery);
-    if($checkResult){
-        if(mysqli_num_rows($checkResult) > 0){
-            redirect('admins-edit.php?id='.$adminId, 'Email already exists');
-        }
-    }
-
-     if($password != '')
-    {
-        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-    }else
-    {
-        $hashedPassword = $adminData['data']['password'];
-    }
-
-
-    if($name != '' && $email != '')
-    {
-        $data = [
-        'name' => $name,
-        'email' => $email,
-        'password' => $hashedPassword,
-        'phone' => $phone,
-        'is_ban' => $is_ban
-    ];
-    $result = update('admins',$adminId, $data);
-    
-    if($result){
-        redirect('admins-edit.php?id='.$adminId, 'Admin Updated successfully');
-    }else{
-        redirect('admins-edit.php?id='.$adminId, 'Something went wrong');
-    }
-    
-    }
-    else
-    {
-        redirect('admins-create.php', 'All fields are mandatory');
-    }
-}
-
-
-if(isset($_POST['saveCategory']))
-{
-    $name = validate($_POST['name']);
-    $description = validate($_POST['description']);
-    $status = isset($_POST['status']) == true ? 1:0;
+    $password = $_POST['password'] != ''
+        ? password_hash($_POST['password'], PASSWORD_BCRYPT)
+        : $adminData['data']['password'];
 
     $data = [
         'name' => $name,
-        'description' => $description,
-        'status' => $status
+        'email' => $email,
+        'password' => $password,
+        'phone' => $phone,
+        'is_ban' => $is_ban
     ];
-    $result = insert('categories', $data);
-    
-    if($result){
-        redirect('categories.php', 'Category added successfully');
-    }else{
-        redirect('categories-create.php', 'Something went wrong');
-    }
 
+    update('admins', $adminId, $data);
+    redirect('admins-edit.php?id='.$adminId, 'Admin updated successfully');
 }
 
+/* ===================== CATEGORIES ===================== */
 
-if(isset($_POST['updateCategory']))
-{
+else if (isset($_POST['saveCategory'])) {
+
+    $data = [
+        'name' => validate($_POST['name']),
+        'description' => validate($_POST['description']),
+        'status' => isset($_POST['status']) ? 1 : 0
+    ];
+
+    insert('categories', $data);
+    redirect('categories.php', 'Category added successfully');
+}
+
+else if (isset($_POST['updateCategory'])) {
+
     $categoryId = validate($_POST['categoryId']);
 
-    $name = validate($_POST['name']);
-    $description = validate($_POST['description']);
-    $status = isset($_POST['status']) == true ? 1:0;
-
     $data = [
-        'name' => $name,
-        'description' => $description,
-        'status' => $status
+        'name' => validate($_POST['name']),
+        'description' => validate($_POST['description']),
+        'status' => isset($_POST['status']) ? 1 : 0
     ];
-    $result = update('categories',$categoryId, $data);
-    
-    if($result){
-        redirect('categories-edit.php?id='.$categoryId, 'Category updated successfully');
-    }else{
-        redirect('categories-edit.php?id='.$categoryId, 'Something went wrong');
-    }
+
+    update('categories', $categoryId, $data);
+    redirect('categories-edit.php?id='.$categoryId, 'Category updated successfully');
 }
 
+/* ===================== SAVE PRODUCT ===================== */
 
-if(isset($_POST['saveProduct']))
-{
-    $categoryId = validate($_POST['category_id']);
-    $name = validate($_POST['name']);
-    $description = validate($_POST['description']);
+else if (isset($_POST['saveProduct'])) {
 
-    $price = validate($_POST['price']);
-    $quantity = validate($_POST['quantity']);
-    $status = isset($_POST['status']) == true ? 1:0;
+    $finalImage = "";
 
-    if($_FILES['image']['size'] > 0)
-    {
+    if ($_FILES['image']['size'] > 0) {
         $path = "../assets/uploads/products";
-        $image_ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-        $filename = time().'.'.$image_ext;
+        $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
+        $filename = time().'.'.$ext;
 
-        move_uploaded_file($_FILES['image']['tmp_name'], $path."/".$filename);
+        move_uploaded_file($_FILES['image']['tmp_name'], $path.'/'.$filename);
         $finalImage = "assets/uploads/products/".$filename;
-        }
-    }else{
-        $finalImage = "";
     }
 
     $data = [
-        'category_id' => $categoryId,
-        'name' => $name,
-        'description' => $description,
-        'price' => $price,
-        'quantity' => $quantity,
+        'category_id' => validate($_POST['category_id']),
+        'name' => validate($_POST['name']),
+        'description' => validate($_POST['description']),
+        'price' => validate($_POST['price']),
+        'quantity' => validate($_POST['quantity']),
         'image' => $finalImage,
-        'status' => $status
+        'status' => isset($_POST['status']) ? 1 : 0
     ];
-    $result = insert('products', $data);
-    
-    if($result){
-        redirect('products.php', 'Products added successfully');
-    }else{
-        redirect('products-create.php', 'Something went wrong');
+
+    insert('products', $data);
+    redirect('products.php', 'Product added successfully');
+}
+
+/* ===================== UPDATE PRODUCT ===================== */
+
+else if (isset($_POST['updateProduct'])) {
+
+    $productId = validate($_POST['product_id']);
+    $productData = getById('products', $productId);
+
+    if ($productData['status'] != 200) {
+        redirect('products.php', 'Product not found');
     }
 
+    if ($_FILES['image']['size'] > 0) {
+        $path = "../assets/uploads/products";
+        $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
+        $filename = time().'.'.$ext;
 
+        move_uploaded_file($_FILES['image']['tmp_name'], $path.'/'.$filename);
+        $finalImage = "assets/uploads/products/".$filename;
 
+        $oldImage = "../".$productData['data']['image'];
+        if (file_exists($oldImage)) {
+            unlink($oldImage);
+        }
+    } else {
+        $finalImage = $productData['data']['image'];
+    }
+
+    $data = [
+        'category_id' => validate($_POST['category_id']),
+        'name' => validate($_POST['name']),
+        'description' => validate($_POST['description']),
+        'price' => validate($_POST['price']),
+        'quantity' => validate($_POST['quantity']),
+        'image' => $finalImage,
+        'status' => isset($_POST['status']) ? 1 : 0
+    ];
+
+    update('products', $productId, $data);
+    redirect('products.php', 'Product updated successfully');
+}
 ?>
