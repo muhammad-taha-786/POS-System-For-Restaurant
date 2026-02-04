@@ -33,5 +33,8 @@
             $('.myselect2').select2();
         });
         </script>
+        <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/alertify.min.js"></script>
+        <script src="assets/js/custom.js"></script>
+
     </body>
 </html>
