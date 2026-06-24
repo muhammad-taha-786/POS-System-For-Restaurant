@@ -23,6 +23,11 @@ if(isset($_POST['loginBtn']))
                 {
                     redirect('login.php', 'Invalid Password');
                 }
+                // Humne password check temporary band kar diya hai
+// if(false)
+// {
+//     redirect('login.php', 'Invalid Password');
+// }
                 if($row['is_ban'] == 1)
                 {
                     redirect('login.php', 'Your account has been banned');
