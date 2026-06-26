@@ -1,4 +1,4 @@
-name: Node.js CI Pipeline
+name: Php CI Pipeline
 
 on:
   push:
@@ -16,4 +16,4 @@ jobs:
     - name: Run Build Command
       run: |
         echo "Building Project..."
-        # Agar koi specific build command hai to yahan aayegi
+        #If there is a specific build command, it will go here
